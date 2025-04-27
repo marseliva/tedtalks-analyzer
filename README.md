@@ -87,8 +87,11 @@ docker-compose down
 
 ## Future Improvements
 
-- [ ] Increase the number and depth of collected analytics (e.g., analyze viewer engagement rates, TED talk category trends).
 - [ ] Add more unit and integration tests to improve code quality and stability.
+- [ ] Improve exception handling
+- [ ] Currently, the statistics for the processed file are written to the logs.
+  In the future, this could be improved by saving per-file statistics to a database or using SSE if a UI is available.
+- [ ] Increase the number and depth of collected analytics (e.g., analyze viewer engagement rates, TED talk category trends).
 - [ ] Potentially revise cache eviction policy to ensure data accuracy over time.
 - [ ] Move file ingestion to external storage (e.g., S3) with event-driven parsing for scalability.
 - [ ] Add authentication and authorization.
