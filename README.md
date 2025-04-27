@@ -81,9 +81,9 @@ docker-compose down
 - `PUT /api/v1/tedtalks/{id}` — Update an existing TedTalk.
 - `DELETE /api/v1/tedtalks/{id}` — Delete a TedTalk.
 - `POST /api/analytics/search` — Search TedTalks based on various parameters.
-- `GET /api/analytics/top-speakers` — Returns top speakers of all the time 
-- `GET /api/analytics/talks-count/{year}` — Returns talks count based on year
-- `GET /api/analytics/best-talk/{year}` — Returns most popular speaker based on year (popularity = likes*views)
+- `GET /api/analytics/top-speakers` — Returns top speakers of all the time.
+- `GET /api/analytics/talks-count/{year}` — Returns talks count based on year.
+- `GET /api/analytics/best-talk/{year}` — Returns most popular speaker based on year.
 
 ## Future Improvements
 
