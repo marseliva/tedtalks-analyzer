@@ -1,13 +1,17 @@
 package com.example.tedtalksanalyzer.service.analytics;
 
+import static com.example.tedtalksanalyzer.cache.CacheConstants.BEST_TALK_PER_YEAR;
+import static com.example.tedtalksanalyzer.cache.CacheConstants.TALKS_PER_YEAR;
+import static com.example.tedtalksanalyzer.cache.CacheConstants.TOP_SPEAKER_TOPIC;
+
+import com.example.tedtalksanalyzer.cache.RedisService;
 import com.example.tedtalksanalyzer.dto.TedTalkAnalyticsDTO;
 import com.example.tedtalksanalyzer.dto.TedTalkDTO;
 import com.example.tedtalksanalyzer.dto.TedTalkInfluenceDTO;
 import com.example.tedtalksanalyzer.exception.AnalyticsCacheException;
 import com.example.tedtalksanalyzer.exception.TedTalkImportException;
 import com.example.tedtalksanalyzer.model.TedTalk;
-import com.example.tedtalksanalyzer.service.RedisService;
-import com.example.tedtalksanalyzer.service.TedTalkService;
+import com.example.tedtalksanalyzer.service.TedTalkDataService;
 import com.example.tedtalksanalyzer.service.utils.TedTalkMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,7 +38,7 @@ public class TedTalkAnalyticsService {
 
     private final StringRedisTemplate redisTemplate;
     private final RedisService redisService;
-    private final TedTalkService tedTalkService;
+    private final TedTalkDataService tedTalkDataService;
     private final ObjectMapper objectMapper;
 
     public void recalculateAnalyticsFromDatabase() {
@@ -42,7 +46,7 @@ public class TedTalkAnalyticsService {
         List<TedTalk> allTedTalks = new ArrayList<>();
 
         while (true) {
-            List<TedTalk> batch = tedTalkService.getTedTalksPage(page);
+            List<TedTalk> batch = tedTalkDataService.getTedTalksPage(page);
             if (batch.isEmpty()) {
                 break;
             }
@@ -79,9 +83,33 @@ public class TedTalkAnalyticsService {
                 .map(TedTalkMapper::toResponseDTO)
                 .toList();
 
-        Map<String, Long> speakerInfluence = calculateSpeakerInfluence(dtos);
-        Map<Integer, TedTalkDTO> bestTalkPerYear = calculateBestTalksPerYear(dtos);
-        Map<Integer, Long> talksPerYear = calculateTalksPerYear(dtos);
+        Map<String, Double> speakerInfluence = new HashMap<>();
+        Map<Integer, TedTalkDTO> bestTalkPerYear = new HashMap<>();
+        Map<Integer, Long> talksPerYear = new HashMap<>();
+
+        for (TedTalkDTO dto : dtos) {
+            String author = dto.getAuthor();
+            int year = dto.getDate().getYear();
+            long views = dto.getViews();
+            long likes = dto.getLikes();
+
+            double engagementRate = (double) likes / Math.max(views, 1);
+            double score = Math.sqrt(views) * engagementRate;
+
+            speakerInfluence.merge(author, score, Double::sum);
+
+            bestTalkPerYear.merge(year, dto, (existing, current) -> {
+                double existingEngagement = (double) existing.getLikes() / Math.max(existing.getViews(), 1);
+                double currentEngagement = (double) current.getLikes() / Math.max(current.getViews(), 1);
+
+                double existingScore = Math.sqrt(existing.getViews()) * existingEngagement;
+                double currentScore = Math.sqrt(current.getViews()) * currentEngagement;
+
+                return currentScore > existingScore ? current : existing;
+            });
+
+            talksPerYear.merge(year, 1L, Long::sum);
+        }
 
         Map<Integer, String> bestTalkPerYearJson = bestTalkPerYear.entrySet().stream()
                 .collect(Collectors.toMap(
@@ -90,37 +118,6 @@ public class TedTalkAnalyticsService {
                 ));
 
         return new TedTalkAnalyticsDTO(speakerInfluence, bestTalkPerYearJson, talksPerYear);
-    }
-
-    private Map<String, Long> calculateSpeakerInfluence(List<TedTalkDTO> dtos) {
-        Map<String, Long> speakerInfluence = new HashMap<>();
-        for (TedTalkDTO dto : dtos) {
-            long score = dto.getViews() + dto.getLikes();
-            speakerInfluence.merge(dto.getAuthor(), score, Long::sum);
-        }
-        return speakerInfluence;
-    }
-
-    private Map<Integer, TedTalkDTO> calculateBestTalksPerYear(List<TedTalkDTO> dtos) {
-        Map<Integer, TedTalkDTO> bestTalkPerYear = new HashMap<>();
-        for (TedTalkDTO dto : dtos) {
-            int year = dto.getDate().getYear();
-            bestTalkPerYear.merge(year, dto, (existing, current) -> {
-                long existingScore = existing.getViews() + existing.getLikes();
-                long currentScore = current.getViews() + current.getLikes();
-                return currentScore > existingScore ? current : existing;
-            });
-        }
-        return bestTalkPerYear;
-    }
-
-    private Map<Integer, Long> calculateTalksPerYear(List<TedTalkDTO> dtos) {
-        Map<Integer, Long> talksPerYear = new HashMap<>();
-        for (TedTalkDTO dto : dtos) {
-            int year = dto.getDate().getYear();
-            talksPerYear.merge(year, 1L, Long::sum);
-        }
-        return talksPerYear;
     }
 
     private String serializeTalkToJson(TedTalkDTO tedTalkDTO) {
@@ -133,7 +130,7 @@ public class TedTalkAnalyticsService {
 
     public List<TedTalkInfluenceDTO> getTopSpeakers(int count) {
         ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
-        Set<ZSetOperations.TypedTuple<String>> topSpeakers = zSetOps.reverseRangeWithScores("top_speakers", 0, count - 1L);
+        Set<ZSetOperations.TypedTuple<String>> topSpeakers = zSetOps.reverseRangeWithScores(TOP_SPEAKER_TOPIC, 0, count - 1L);
 
         if (CollectionUtils.isEmpty(topSpeakers)) {
             return Collections.emptyList();
@@ -146,7 +143,7 @@ public class TedTalkAnalyticsService {
 
     public Long getAmountOfTalksPerYear(int year) {
         HashOperations<String, Object, Object> hashOps = redisTemplate.opsForHash();
-        var value = hashOps.get("talks_per_year", String.valueOf(year));
+        var value = hashOps.get(TALKS_PER_YEAR, String.valueOf(year));
 
         if (value == null) {
             return 0L;
@@ -159,15 +156,15 @@ public class TedTalkAnalyticsService {
         }
     }
 
-    public Object getBestTalkByYear(int year) {
+    public TedTalkDTO getBestTalkByYear(int year) {
         HashOperations<String, Object, Object> hashOps = redisTemplate.opsForHash();
-        var json = hashOps.get("best_talk_per_year", String.valueOf(year));
+        var json = hashOps.get(BEST_TALK_PER_YEAR, String.valueOf(year));
 
         try {
-            return objectMapper.readTree(json.toString());
+            return objectMapper.readValue(json.toString(), TedTalkDTO.class);
         } catch (Exception e) {
             log.error("Failed to parse best talk JSON", e);
-            return "Failed to parse talk data";
+            throw new AnalyticsCacheException("Failed to parse best talk JSON");
         }
     }
 }

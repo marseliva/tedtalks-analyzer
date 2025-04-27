@@ -1,6 +1,7 @@
-package com.example.tedtalksanalyzer.service.analytics;
+package com.example.tedtalksanalyzer.cache;
 
 import com.example.tedtalksanalyzer.exception.AnalyticsCacheException;
+import com.example.tedtalksanalyzer.service.analytics.TedTalkAnalyticsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;

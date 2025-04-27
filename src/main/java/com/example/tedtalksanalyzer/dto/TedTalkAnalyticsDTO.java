@@ -10,7 +10,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TedTalkAnalyticsDTO {
-    private Map<String, Long> speakerInfluence;
+    private Map<String, Double> speakerInfluence;
     private Map<Integer, String> bestTalkPerYear;
     private Map<Integer, Long> talksPerYear;
 }

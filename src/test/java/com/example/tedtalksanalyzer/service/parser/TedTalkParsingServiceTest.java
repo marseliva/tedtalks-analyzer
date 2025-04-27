@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verify;
 
 import com.example.tedtalksanalyzer.event.TedTalkImportEvent;
 import com.example.tedtalksanalyzer.exception.TedTalkImportException;
-import com.example.tedtalksanalyzer.service.TedTalkService;
+import com.example.tedtalksanalyzer.service.TedTalkDataService;
 import com.example.tedtalksanalyzer.service.analytics.TedTalkAnalyticsService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import java.nio.file.Path;
 class TedTalkParsingServiceTest {
 
     @Mock
-    private TedTalkService tedTalkService;
+    private TedTalkDataService tedTalkDataService;
 
     @Mock
     private TedTalkAnalyticsService analyticsService;
@@ -54,7 +54,7 @@ class TedTalkParsingServiceTest {
 
         parsingService.importFromCsv(event);
 
-        verify(tedTalkService, atLeastOnce()).saveAll(any());
+        verify(tedTalkDataService, atLeastOnce()).saveAll(any());
         verify(analyticsService).calculateAndStoreAnalytics(anyList());
     }
 
@@ -62,10 +62,10 @@ class TedTalkParsingServiceTest {
     void testImportThrowsWhenSaveFails() {
         TedTalkImportEvent event = new TedTalkImportEvent(resourceFile.toAbsolutePath().toString());
 
-        doThrow(new RuntimeException("Save failed")).when(tedTalkService).saveAll(anyList());
+        doThrow(new RuntimeException("Save failed")).when(tedTalkDataService).saveAll(anyList());
 
         assertThrows(TedTalkImportException.class, () -> parsingService.importFromCsv(event));
 
-        verify(tedTalkService, atLeastOnce()).saveAll(any());
+        verify(tedTalkDataService, atLeastOnce()).saveAll(any());
     }
 }

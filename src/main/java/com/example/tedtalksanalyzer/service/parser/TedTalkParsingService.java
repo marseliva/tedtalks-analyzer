@@ -4,7 +4,7 @@ import com.example.tedtalksanalyzer.dto.TedTalkAnalyticsDTO;
 import com.example.tedtalksanalyzer.event.TedTalkImportEvent;
 import com.example.tedtalksanalyzer.exception.TedTalkImportException;
 import com.example.tedtalksanalyzer.model.TedTalk;
-import com.example.tedtalksanalyzer.service.TedTalkService;
+import com.example.tedtalksanalyzer.service.TedTalkDataService;
 import com.example.tedtalksanalyzer.service.analytics.TedTalkAnalyticsService;
 import com.example.tedtalksanalyzer.service.utils.ExecutorServiceUtils;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class TedTalkParsingService {
 
     private static final String GENERAL_CSV_IMPORT_ERROR = "General error during CSV import";
 
-    private final TedTalkService tedTalkService;
+    private final TedTalkDataService tedTalkDataService;
     private final TedTalkAnalyticsService analyticsService;
 
     @EventListener
@@ -63,7 +63,7 @@ public class TedTalkParsingService {
             allTedTalks.addAll(batchCopy);
 
             CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-                    tedTalkService.saveAll(batchCopy), executor
+                    tedTalkDataService.saveAll(batchCopy), executor
             ).exceptionally(ex -> {
                 log.error("Error saving batch", ex);
                 errors.add(ex);

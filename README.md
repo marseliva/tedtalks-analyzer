@@ -1,7 +1,7 @@
 # TedTalks Analyzer
 
 A Java Spring Boot application for analyzing TED Talks data.  
-Provides TED Talks CRUD operations, asynchronous CSV uploads, and data analytics.
+Provides CRUD operations, asynchronous CSV uploads, and data analytics, including detection of suspicious data such as unusual like patterns.
 
 ---
 
@@ -97,3 +97,5 @@ docker-compose down
 - [ ] Add authentication and authorization.
 - [ ] Implement pagination and sorting for listing APIs.
 - [ ] Improve validation and error handling during CSV import.
+- [ ] Use database migration tool instead of auto schema generation.
+- [ ] Change metrics calculation to something more representative.
