@@ -15,9 +15,9 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Entity
-@Table(name = "ted_talks", indexes = {
-        @Index(name = "idx_tedtalks_author", columnList = "author"),
-        @Index(name = "idx_tedtalks_date", columnList = "date")
+@Table(name = "ted_talk", indexes = {
+        @Index(name = "idx_ted_talk_author", columnList = "author"),
+        @Index(name = "idx_ted_talk_date", columnList = "date")
 })
 @NoArgsConstructor
 @Getter
@@ -44,7 +44,7 @@ public class TedTalk {
     @Column(nullable = false)
     private Long likes;
 
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false)
     private String link;
 
     public TedTalk(String title, String author, LocalDate date, Long views, Long likes, String link) {

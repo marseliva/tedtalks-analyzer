@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class TedTalkService {
+public class TedTalkDataService {
 
     private static final int BATCH_SIZE = 1000;
 

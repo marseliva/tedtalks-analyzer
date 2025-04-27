@@ -3,7 +3,7 @@ package com.example.tedtalksanalyzer.controller;
 import com.example.tedtalksanalyzer.dto.SearchRequest;
 import com.example.tedtalksanalyzer.dto.TedTalkDTO;
 import com.example.tedtalksanalyzer.dto.TedTalkInfluenceDTO;
-import com.example.tedtalksanalyzer.service.TedTalkService;
+import com.example.tedtalksanalyzer.service.TedTalkDataService;
 import com.example.tedtalksanalyzer.service.analytics.TedTalkAnalyticsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ import java.util.List;
 public class TedTalkAnalyticController {
 
     private final TedTalkAnalyticsService analyticsService;
-    private final TedTalkService tedTalkService;
+    private final TedTalkDataService tedTalkDataService;
 
     @GetMapping("/top-speakers")
     public ResponseEntity<List<TedTalkInfluenceDTO>> getTopSpeakers(@RequestParam(defaultValue = "10") int count) {
@@ -31,7 +31,7 @@ public class TedTalkAnalyticController {
     }
 
     @GetMapping("/best-talk/{year}")
-    public ResponseEntity<?> getBestTalkByYear(@PathVariable int year) {
+    public ResponseEntity<TedTalkDTO> getBestTalkByYear(@PathVariable int year) {
         var bestTalk = analyticsService.getBestTalkByYear(year);
         if (bestTalk == null) {
             return ResponseEntity.notFound().build();
@@ -47,6 +47,6 @@ public class TedTalkAnalyticController {
 
     @PostMapping("/search")
     public ResponseEntity<List<TedTalkDTO>> search(@RequestBody SearchRequest request) {
-        return ResponseEntity.ok(tedTalkService.search(request));
+        return ResponseEntity.ok(tedTalkDataService.search(request));
     }
 }

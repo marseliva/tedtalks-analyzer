@@ -1,11 +1,13 @@
 package com.example.tedtalksanalyzer.service.analytics;
 
+import static com.example.tedtalksanalyzer.cache.CacheConstants.LAST_UPDATED_KEY;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.example.tedtalksanalyzer.cache.AnalyticsRefreshJob;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -39,18 +41,18 @@ class AnalyticsRefreshJobTest {
 
     @Test
     void shouldRefreshAnalyticsWhenNoLastUpdated() {
-        when(valueOperations.get("analytics:last_updated")).thenReturn(null);
+        when(valueOperations.get(LAST_UPDATED_KEY)).thenReturn(null);
 
         analyticsRefreshJob.scheduledRefreshAnalytics();
 
         verify(tedTalkAnalyticsService).recalculateAnalyticsFromDatabase();
-        verify(valueOperations).set(eq("analytics:last_updated"), anyString());
+        verify(valueOperations).set(eq(LAST_UPDATED_KEY), anyString());
     }
 
     @Test
     void shouldNotRefreshIfAnalyticsAreUpToDate() {
         Instant now = Instant.now();
-        when(valueOperations.get("analytics:last_updated")).thenReturn(now.toString());
+        when(valueOperations.get(LAST_UPDATED_KEY)).thenReturn(now.toString());
 
         analyticsRefreshJob.scheduledRefreshAnalytics();
 
@@ -59,11 +61,11 @@ class AnalyticsRefreshJobTest {
 
     @Test
     void shouldForceRefreshOnInvalidTimestamp() {
-        when(valueOperations.get("analytics:last_updated")).thenReturn("invalid-timestamp");
+        when(valueOperations.get(LAST_UPDATED_KEY)).thenReturn("invalid-timestamp");
 
         analyticsRefreshJob.scheduledRefreshAnalytics();
 
         verify(tedTalkAnalyticsService).recalculateAnalyticsFromDatabase();
-        verify(valueOperations).set(eq("analytics:last_updated"), anyString());
+        verify(valueOperations).set(eq(LAST_UPDATED_KEY), anyString());
     }
 }
