@@ -1,8 +1,10 @@
-package com.example.tedtalksanalyzer.service;
+package com.example.tedtalksanalyzer.service.utils;
 
 import com.example.tedtalksanalyzer.dto.TedTalkDTO;
 import com.example.tedtalksanalyzer.model.TedTalk;
+import lombok.experimental.UtilityClass;
 
+@UtilityClass
 public class TedTalkMapper {
 
     public static TedTalk toEntity(TedTalkDTO dto) {

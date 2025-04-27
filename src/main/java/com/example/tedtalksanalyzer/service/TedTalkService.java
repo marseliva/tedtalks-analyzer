@@ -4,6 +4,7 @@ import com.example.tedtalksanalyzer.dto.SearchRequest;
 import com.example.tedtalksanalyzer.dto.TedTalkDTO;
 import com.example.tedtalksanalyzer.model.TedTalk;
 import com.example.tedtalksanalyzer.repository.TedTalkRepository;
+import com.example.tedtalksanalyzer.service.utils.TedTalkMapper;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -28,8 +29,8 @@ public class TedTalkService {
     private final TedTalkRepository tedTalkRepository;
 
     @Transactional
-    public TedTalkDTO createTedTalk(TedTalk tedTalk) {
-        return TedTalkMapper.toResponseDTO(tedTalkRepository.save(tedTalk));
+    public void createTedTalk(TedTalkDTO tedTalk) {
+        tedTalkRepository.save(TedTalkMapper.toEntity(tedTalk));
     }
 
     @Transactional
@@ -53,7 +54,7 @@ public class TedTalkService {
     }
 
     @Transactional
-    public TedTalkDTO updateTedTalk(UUID id, TedTalk updatedTalk) {
+    public TedTalkDTO updateTedTalk(UUID id, TedTalkDTO updatedTalk) {
         TedTalk tedTalk = tedTalkRepository.findById(id)
                 .map(existing -> {
                     existing.setTitle(updatedTalk.getTitle());

@@ -1,7 +1,6 @@
 package com.example.tedtalksanalyzer.controller;
 
 import com.example.tedtalksanalyzer.dto.TedTalkDTO;
-import com.example.tedtalksanalyzer.model.TedTalk;
 import com.example.tedtalksanalyzer.service.TedTalkService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +24,9 @@ public class TedTalkController {
     private final TedTalkService tedTalkService;
 
     @PostMapping
-    public ResponseEntity<TedTalkDTO> createTedTalk(@RequestBody TedTalk tedTalk) {
-        TedTalkDTO tedTalkDTO = tedTalkService.createTedTalk(tedTalk);
-        return ResponseEntity.status(201).body(tedTalkDTO);
+    public ResponseEntity<TedTalkDTO> createTedTalk(@RequestBody TedTalkDTO tedTalkDto) {
+        tedTalkService.createTedTalk(tedTalkDto);
+        return ResponseEntity.status(201).build();
     }
 
     @GetMapping
@@ -45,7 +44,7 @@ public class TedTalkController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TedTalkDTO> updateTedTalk(@PathVariable UUID id, @RequestBody TedTalk tedTalk) {
+    public ResponseEntity<TedTalkDTO> updateTedTalk(@PathVariable UUID id, @RequestBody TedTalkDTO tedTalk) {
         TedTalkDTO updated = tedTalkService.updateTedTalk(id, tedTalk);
         if (updated == null) {
             return ResponseEntity.notFound().build();
