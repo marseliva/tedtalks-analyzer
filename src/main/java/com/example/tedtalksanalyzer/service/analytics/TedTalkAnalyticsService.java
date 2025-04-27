@@ -7,8 +7,8 @@ import com.example.tedtalksanalyzer.exception.AnalyticsCacheException;
 import com.example.tedtalksanalyzer.exception.TedTalkImportException;
 import com.example.tedtalksanalyzer.model.TedTalk;
 import com.example.tedtalksanalyzer.service.RedisService;
-import com.example.tedtalksanalyzer.service.TedTalkMapper;
 import com.example.tedtalksanalyzer.service.TedTalkService;
+import com.example.tedtalksanalyzer.service.utils.TedTalkMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -133,7 +133,7 @@ public class TedTalkAnalyticsService {
 
     public List<TedTalkInfluenceDTO> getTopSpeakers(int count) {
         ZSetOperations<String, String> zSetOps = redisTemplate.opsForZSet();
-        Set<ZSetOperations.TypedTuple<String>> topSpeakers = zSetOps.reverseRangeWithScores("top_speakers", 0, count - 1);
+        Set<ZSetOperations.TypedTuple<String>> topSpeakers = zSetOps.reverseRangeWithScores("top_speakers", 0, count - 1L);
 
         if (CollectionUtils.isEmpty(topSpeakers)) {
             return Collections.emptyList();

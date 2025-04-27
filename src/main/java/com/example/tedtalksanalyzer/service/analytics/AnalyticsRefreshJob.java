@@ -1,5 +1,6 @@
 package com.example.tedtalksanalyzer.service.analytics;
 
+import com.example.tedtalksanalyzer.exception.AnalyticsCacheException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -68,7 +69,7 @@ public class AnalyticsRefreshJob {
             log.info("Analytics successfully refreshed at {}", Instant.now());
         } catch (Exception e) {
             log.error("Failed to refresh analytics", e);
-            throw new RuntimeException("Analytics refresh failed", e);
+            throw new AnalyticsCacheException("Analytics refresh failed", e);
         }
     }
 }
